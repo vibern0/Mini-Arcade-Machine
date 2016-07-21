@@ -69,6 +69,8 @@ public:
             new_body_part->next = snake_body;
             snake_body = new_body_part;
         }
+
+        generateSeed();
     }
     void updateLCD(LCD *lcd)
     {
@@ -82,6 +84,7 @@ public:
             //
             body_part = body_part->next;
         }
+        setPixel(snake_food[0], snake_food[1], 1);
         //
         lcd->gotoXY(0, 0);
         lcd->write(LCD_D, 0x00);
@@ -123,6 +126,7 @@ public:
     }
     void move()
     {
+        checkCatchSeed();
         updateBodyDirections();
         //
         BodySnake *body_part = snake_body;
@@ -173,5 +177,55 @@ public:
             snake_part = snake_part->next;
             order_part ++;
         }
+    }
+    void growthSnake()
+    {
+        BodySnake *snake_part = snake_body;
+        BodySnake *new_body_part;
+        byte w = 0;
+        
+        new_body_part = (BodySnake*)malloc(sizeof(BodySnake));
+        new_body_part->direction = snake_part->direction;
+        new_body_part->x = snake_part->x;
+        new_body_part->y = snake_part->y;
+        switch(new_body_part->direction)
+        {
+            case DIRECTION_NORTH:
+                new_body_part->y --;
+                break;
+            case DIRECTION_SOUTH:
+                new_body_part->y ++;
+                break;
+            case DIRECTION_EAST:
+                new_body_part->x --;
+                break;
+            case DIRECTION_WEST:
+                new_body_part->x ++;
+                break;
+        }
+        new_body_part->next_moves = NULL;
+        //
+        new_body_part->next = snake_body;
+        snake_body = new_body_part;
+    }
+    void eatSeed()
+    {
+        growthSnake();
+    }
+    void checkCatchSeed()
+    {
+        if( snake_body->x == snake_food[0] &&
+            snake_body->y == snake_food[1])
+        {
+            eatSeed();
+            generateSeed();
+        }
+    }
+    void generateSeed()
+    {
+        static int x = 0;
+        snake_food[0] = 5;//rand() % LCD_X;
+        snake_food[1] = 15 + x;//rand() % LCD_Y;
+        x += 5;
     }
 };

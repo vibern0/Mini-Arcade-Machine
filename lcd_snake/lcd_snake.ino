@@ -30,16 +30,16 @@ void loop()
     game->move();
     game->updateLCD(lcd);
     
-    delay(100);
+    delay(1000);
 
     
     x++;
     
-    if(x == 10)
+    if(x == 31)
     {
         game->changeDirection(DIRECTION_EAST);
     }
-    else if(x == 20)
+    else if(x == 53)
     {
         game->changeDirection(DIRECTION_NORTH);
     }
