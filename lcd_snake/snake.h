@@ -21,192 +21,219 @@ struct body_snake_
 };
 typedef struct body_snake_ BodySnake;
 
-class SnakeGame
+class Snake
 {
-    
-    byte map[LCD_X * LCD_Y / 8];
-    //byte snake_body[MAX_SNAKE_BODY_SIZE][2]; // x | y
-    
-    //
-    BodySnake *snake_body;//[MAX_SNAKE_BODY_SIZE];
-    //BodyMove *next_moves;
-    //
-    
-    //byte snake_length;
-    byte snake_food[2];
-    
-    void setPixel(byte x, byte y, byte color)
-    {
-        if ((x < 0) || (x >= LCD_X) || (y < 0) || (y >= LCD_Y))
-            return;
-
-        if (color) 
-            map[x+ (y/8)*LCD_X] |= (1 << (y % 8));
-        else
-            map[x+ (y/8)*LCD_X] &= ~(1 << (y % 8));
-
-    }
-
+private:
+    BodySnake *head;
+    BodySnake *tail;
+    BodySnake *body_snake;
 public:
-    SnakeGame() 
+    Snake() { }
+    Snake(byte x, byte y)
     {
+        body_snake = (BodySnake*)malloc(sizeof(BodySnake));
+        body_snake->x = x;
+        body_snake->y = y;
+        body_snake->direction = DIRECTION_SOUTH;
+        body_snake->next = NULL;
+        body_snake->next_moves = NULL;
+
+        head = body_snake;
+        tail = body_snake;
     }
-    void init(byte x, byte y, byte length)
+    void growth()
     {
         BodySnake *new_body_part;
-        snake_body = NULL;
-        //
-        memset(map, 0, sizeof map);
-        
-        for(byte w = 0; w < length; w++)
+        BodyMove *new_body_move;
+        BodyMove *tail_moves;
+        byte x, y;
+        x = y = 0;
+
+        switch(tail->direction)
         {
-            new_body_part = (BodySnake*)malloc(sizeof(BodySnake));
-            new_body_part->x = x;
-            new_body_part->y = y + w;
-            new_body_part->direction = DIRECTION_SOUTH;
-            new_body_part->next_moves = NULL;
-            //
-            new_body_part->next = snake_body;
-            snake_body = new_body_part;
+            case DIRECTION_NORTH:
+                y ++;
+                break;
+            case DIRECTION_SOUTH:
+                y --;
+                break;
+            case DIRECTION_EAST:
+                x --;
+                break;
+            case DIRECTION_WEST:
+                x ++;
+                break;
         }
+
+        new_body_part = (BodySnake*)malloc(sizeof(BodySnake));
+        new_body_part->x = tail->x + x;
+        new_body_part->y = tail->y + y;
+        new_body_part->direction = tail->direction;
+        new_body_part->next = NULL;
+        new_body_part->next_moves = NULL;
+
+        tail_moves = tail->next_moves;
+        while(tail_moves != NULL)
+        {
+            new_body_move = (BodyMove*)malloc(sizeof(BodyMove));
+            new_body_move->order = tail_moves->order + 1;
+            new_body_move->direction = tail_moves->direction;
+
+            new_body_move->next = new_body_part->next_moves;
+            new_body_part->next_moves = new_body_move;
+
+            tail_moves = tail_moves->next;
+        }
+
+        tail->next = new_body_part;
+        tail = new_body_part;
+    }
+    BodySnake* getHead()
+    {
+        return head;
+    }
+    BodySnake* getTail()
+    {
+        return tail;
+    }
+    void setDirection(byte direction)
+    {
+        BodyMove *new_next_move;
+        BodySnake *body_part;
+        byte order = 1;
+
+        body_part = head;
+        while(body_part != NULL)
+        {
+            new_next_move = (BodyMove*)malloc(sizeof(BodyMove));
+            new_next_move->order = order;
+            new_next_move->direction = direction;
+
+            new_next_move->next = body_part->next_moves;
+            body_part->next_moves = new_next_move;
+
+            order ++;
+            body_part = body_part->next;
+        }
+    }
+    void updateDirections()
+    {
+        BodyMove *move, *prev_move;
+        BodySnake *body_part;
+
+        body_part = head;
+        while(body_part != NULL)
+        {
+            move = body_part->next_moves;
+            prev_move = move;
+            while(move != NULL)
+            {
+                move->order --;
+                if(move->order == 0)
+                {
+                    int direction = move->direction;
+                    body_part->direction = direction;
+
+                    if(prev_move == body_part->next_moves)
+                        body_part->next_moves = NULL;
+                    else
+                        prev_move->next = NULL;
+
+                    free(move);
+                    break;
+                }
+                else
+                {
+                    prev_move = move;
+                    move = move->next;
+                }
+            }
+
+            body_part = body_part->next;
+        }
+    }
+    void move()
+    {
+        BodySnake *snake_part = body_snake;
+        while(snake_part != NULL)
+        {
+            switch(snake_part->direction)
+            {
+                case DIRECTION_NORTH:
+                    if(snake_part->y == 0)
+                        snake_part->y = LCD_Y;
+                    snake_part->y --;
+                    break;
+                case DIRECTION_SOUTH:
+                    snake_part->y ++;
+                    if(snake_part->y == LCD_Y)
+                        snake_part->y = 0;
+                    break;
+                case DIRECTION_EAST:
+                    snake_part->x ++;
+                    if(snake_part->x == LCD_X)
+                        snake_part->x = 0;
+                    break;
+                case DIRECTION_WEST:
+                    if(snake_part->x == 0)
+                        snake_part->x = LCD_X;
+                    snake_part->x --;
+                    break;
+            }
+            //
+            snake_part = snake_part->next;
+                
+        }
+    }
+};
+
+class SnakeGame
+{
+private:
+    Snake snake;
+    byte snake_food[2];
+public:
+    SnakeGame(byte x, byte y, byte length) 
+    {
+        byte i = 0;
+        snake = Snake(x, y);
+        while(i++ < length)
+            snake.growth();
 
         generateSeed();
     }
     void updateLCD(LCD *lcd)
     {
-        BodySnake *body_part = snake_body;
-        //
-        memset(map, 0, sizeof map);
-        //
-        while(body_part != NULL)
-        {
-            setPixel(body_part->x, body_part->y, 1);
-            //
-            body_part = body_part->next;
-        }
-        setPixel(snake_food[0], snake_food[1], 1);
-        //
-        lcd->gotoXY(0, 0);
-        lcd->write(LCD_D, 0x00);
+        BodySnake *body_snake = snake.getHead();
         
-        for (word i = 0; i < (LCD_X * LCD_Y / 8); i++)
+        lcd->clear();
+        while(body_snake != NULL)
         {
-            lcd->write(LCD_D, map[i]);
+            lcd->setPixel(body_snake->x, body_snake->y, 1);
+            body_snake = body_snake->next;
         }
-        lcd->write(LCD_D, 0x00);
+        lcd->setPixel(snake_food[0], snake_food[1], 1);
+        //
+        lcd->drawMap();
     }
     void updateBodyDirections()
     {
-        //calcular tempo restante usando order para mudar de posicao
-        
-        BodySnake *snake_part = snake_body;
-        BodyMove *move;
-        while(snake_part != NULL)
-        {
-            if(snake_part->next_moves != NULL)
-            {
-                //    
-                move = snake_part->next_moves;
-                while(move != NULL)
-                {
-                    move->order --;
-                    if(move->order == 0)
-                    {
-                        snake_part->direction = move->direction;
-                        snake_part->next_moves = move->next;
-                        free(move);
-                    }
-                    move = move->next;
-                }
-            }
-            //
-            snake_part = snake_part->next;
-        }
-        
+        snake.updateDirections();
     }
     void move()
     {
         checkCatchSeed();
         updateBodyDirections();
         //
-        BodySnake *body_part = snake_body;
-        while(body_part != NULL)
-        {
-            switch(body_part->direction)
-            {
-                case DIRECTION_NORTH:
-                    if(body_part->y == 0)
-                        body_part->y = LCD_Y;
-                    body_part->y --;
-                    break;
-                case DIRECTION_SOUTH:
-                    body_part->y ++;
-                    if(body_part->y == LCD_Y)
-                        body_part->y = 0;
-                    break;
-                case DIRECTION_EAST:
-                    body_part->x ++;
-                    if(body_part->x == LCD_X)
-                        body_part->x = 0;
-                    break;
-                case DIRECTION_WEST:
-                    if(body_part->x == 0)
-                        body_part->x = LCD_X;
-                    body_part->x --;
-                    break;
-            }
-            //
-            body_part = body_part->next;
-                
-        }
+        snake.move();
     }
-    void changeDirection(byte d)
+    void changeDirection(byte direction)
     {
-        byte order_part = 1;
-        BodySnake *snake_part = snake_body;
-        BodyMove *move;
-        while(snake_part != NULL)
-        {
-            move = (BodyMove*)malloc(sizeof(BodyMove));
-            move->order = order_part;
-            move->direction = d;
-            //
-            move->next = snake_part->next_moves;
-            snake_part->next_moves = move;
-            //
-            snake_part = snake_part->next;
-            order_part ++;
-        }
+        snake.setDirection(direction);
     }
     void growthSnake()
     {
-        BodySnake *snake_part = snake_body;
-        BodySnake *new_body_part;
-        byte w = 0;
-        
-        new_body_part = (BodySnake*)malloc(sizeof(BodySnake));
-        new_body_part->direction = snake_part->direction;
-        new_body_part->x = snake_part->x;
-        new_body_part->y = snake_part->y;
-        switch(new_body_part->direction)
-        {
-            case DIRECTION_NORTH:
-                new_body_part->y --;
-                break;
-            case DIRECTION_SOUTH:
-                new_body_part->y ++;
-                break;
-            case DIRECTION_EAST:
-                new_body_part->x --;
-                break;
-            case DIRECTION_WEST:
-                new_body_part->x ++;
-                break;
-        }
-        new_body_part->next_moves = NULL;
-        //
-        new_body_part->next = snake_body;
-        snake_body = new_body_part;
+        snake.growth();
     }
     void eatSeed()
     {
@@ -214,8 +241,9 @@ public:
     }
     void checkCatchSeed()
     {
-        if( snake_body->x == snake_food[0] &&
-            snake_body->y == snake_food[1])
+        BodySnake *body_snake = snake.getHead();
+        if( body_snake->x == snake_food[0] &&
+            body_snake->y == snake_food[1])
         {
             eatSeed();
             generateSeed();

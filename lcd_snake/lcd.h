@@ -114,6 +114,8 @@ class LCD {
     byte sdin;
     byte sclk;
     byte light;
+
+    byte map[LCD_X * LCD_Y / 8];
     
 public:
     LCD(byte sce, byte rst, byte dc, byte sdin, byte sclk, byte light)
@@ -154,6 +156,7 @@ public:
         {
             write(LCD_D, 0x00);
         }
+        memset(map, 0, sizeof map);
     }
     void write(byte dc, byte data)
     {
@@ -186,5 +189,27 @@ public:
         }
     }
 
-    
+    void setPixel(byte x, byte y, byte color)
+    {
+        if ((x < 0) || (x >= LCD_X) || (y < 0) || (y >= LCD_Y))
+            return;
+
+        if (color) 
+            map[x+ (y/8)*LCD_X] |= (1 << (y % 8));
+        else
+            map[x+ (y/8)*LCD_X] &= ~(1 << (y % 8));
+
+    }
+
+    void drawMap()
+    {
+        gotoXY(0, 0);
+        write(LCD_D, 0x00);
+        
+        for (word i = 0; i < (LCD_X * LCD_Y / 8); i++)
+        {
+            write(LCD_D, map[i]);
+        }
+        write(LCD_D, 0x00);
+    }
 };
