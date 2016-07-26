@@ -3,6 +3,10 @@
 #define DIRECTION_EAST      3
 #define DIRECTION_WEST      4
 //
+#define INITIAL_SNAKE_BODY_SIZE     8
+#define INITIAL_SNAKE_X             5
+#define INITIAL_SNAKE_Y             10
+//
 struct body_move_
 {
     byte order;
@@ -187,7 +191,7 @@ public:
     }
 };
 
-class SnakeGame
+class SnakeGame : public Game
 {
 private:
     Snake snake;
