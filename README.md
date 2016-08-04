@@ -1,7 +1,3 @@
-<<<<<<< HEAD
-# Snake-as-Arcade-Game
-Snake game for mini arcade machine built with arduino (with some extra modules)
-=======
 <img src="https://i.ytimg.com/vi/AvYQ1kYgeEM/maxresdefault.jpg"/>
 # Mini-Arcade-Game
 This is the code to run in an arduino for a Mini Arcade Machine project
@@ -18,5 +14,3 @@ The project is a small arcade machine for arcade games, like the snake game, spa
 - pcd8544
 - joystick
 - (maybe others, not finished yet)
-
->>>>>>> master
