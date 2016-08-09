@@ -9,12 +9,12 @@
 #define LOADING_GAME    3
 #define PLAYING_GAME    4
 //
-#define SECONDS_TO_LOAD 1
+#define SECONDS_TO_LOAD 0
 
 LCD *lcd;
 byte machine_state;
 unsigned long int last_time;
-Game *game;
+SnakeGame *game;
 byte option_game = 1;
 
 void setup()
@@ -48,7 +48,11 @@ void loop()
     }
     else if(machine_state == CHOOSE_GAME)
     {
-        int index;
+        game = new SnakeGame(INITIAL_SNAKE_X, INITIAL_SNAKE_Y, INITIAL_SNAKE_BODY_SIZE);
+        last_time = millis();
+        machine_state = LOADING_GAME;
+
+        /*int index;
         int x, y;
         //get from input
         getAxis(&x, &y);
@@ -88,7 +92,7 @@ void loop()
             }
             last_time = millis();
             machine_state = LOADING_GAME;
-        }
+        }*/
     }
     else if(machine_state == LOADING_GAME)
     {
@@ -115,7 +119,7 @@ void loop()
         else if(y < 0)
             game->changeDirection(DIRECTION_SOUTH);
 
-        game->checkCatchSeed();
+        game->updateLCD(lcd);
     }
 }
 
@@ -133,13 +137,13 @@ void loadGamesList()
     lcd->writeCharacter('<');
 }
 
-Game* startSnakeGame()
+/*Game* startSnakeGame()
 {
     Game *game;
     game = new SnakeGame(INITIAL_SNAKE_X, INITIAL_SNAKE_Y, INITIAL_SNAKE_BODY_SIZE);
 
     return game;
-}
+}*/
 
 Game* startSpaceInvadersGame()
 {
