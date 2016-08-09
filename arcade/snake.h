@@ -141,12 +141,12 @@ public:
                     int direction = move->direction;
                     body_part->direction = direction;
 
-                    if(prev_move == body_part->next_moves)
+                    /*if(prev_move->next == NULL)
                         body_part->next_moves = NULL;
                     else
                         prev_move->next = NULL;
 
-                    free(move);
+                    free(move);*/
                     break;
                 }
                 else
@@ -194,7 +194,7 @@ public:
     }
 };
 
-class SnakeGame : public Game
+class SnakeGame// : public Game
 {
 private:
     Snake snake;
@@ -224,15 +224,10 @@ public:
         //
         lcd->drawMap();
     }
-    void updateBodyDirections()
-    {
-        snake.updateDirections();
-    }
     void move()
     {
         checkCatchSeed();
-        updateBodyDirections();
-        //
+        snake.updateDirections();
         snake.move();
     }
     void changeDirection(byte direction)
