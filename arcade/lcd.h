@@ -143,7 +143,7 @@ public:
         digitalWrite(rst, HIGH);
 
         write(LCD_CMD,  0x21);  // LCD Extended Commands.
-        write(LCD_CMD,  0xAA);  // Set LCD Vop (Contrast). //B1
+        write(LCD_CMD,  0xB2);  // Set LCD Vop (Contrast). //B1
         write(LCD_CMD,  0x04);  // Set Temp coefficent. //0x04
         write(LCD_CMD,  0x14);  // LCD bias mode 1:48. //0x13
         write(LCD_CMD,  0x0C);  // LCD in normal mode. 0x0d for inverse

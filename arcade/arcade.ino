@@ -37,6 +37,12 @@ void setup()
 
 void loop()
 {
+  //
+}
+
+
+void loopzx()
+{
     if(machine_state == LOAD_WINDOW)
     {
         if(millis() > last_time + SECONDS_TO_LOAD * 4000)
@@ -127,11 +133,11 @@ void loadGamesList()
 {
     lcd->clear();
     lcd->gotoXY(0, 0);
-    lcd->writeString("Choose an option:");
+    //lcd->writeString("Choose an option:");
     lcd->gotoXY(0, 1);
-    lcd->writeString("1 - Snake Game");
+    //lcd->writeString("1 - Snake Game");
     lcd->gotoXY(0, 2);
-    lcd->writeString("2 - Space Invaders");
+    //lcd->writeString("2 - Space Invaders");
 
     lcd->gotoXY(25, 1);
     lcd->writeCharacter('<');
