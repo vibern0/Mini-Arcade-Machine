@@ -150,7 +150,7 @@ public:
         write(LCD_C,    0x20);
         write(LCD_C,    0x0C);
     }
-    void clear()
+    void erase()
     {
         for (int index = 0; index < LCD_X * LCD_Y / 8; index++)
         {
@@ -199,6 +199,19 @@ public:
         else
             map[x+ (y/8)*LCD_X] &= ~(1 << (y % 8));
 
+    }
+
+    void updatePixel(byte x, byte y)
+    {
+        float line_f = y / 8;
+        byte line = (byte)floor(line_f);
+        gotoXY(x, line);
+        Serial.print(x);
+        Serial.print(" ");
+        Serial.println(line);
+        write(LCD_D, 0x00);
+        write(LCD_D, map[LCD_X * line + x]);
+        write(LCD_D, 0x00);
     }
 
     void drawMap()
