@@ -1,3 +1,4 @@
+#define DIRECTION_NULL      0
 #define DIRECTION_NORTH     1
 #define DIRECTION_SOUTH     2
 #define DIRECTION_EAST      3
@@ -19,6 +20,8 @@ struct s_body_snake
     byte x;
     byte y;
     byte direc;
+    byte next_direc;
+    boolean change_direc;
     struct s_snake_move *moves;
     struct s_body_snake *next;
 };
@@ -32,27 +35,42 @@ private:
     struct s_body_snake* check_in_boundaries(struct s_body_snake* body_slice)
     {
         if(body_slice->x == 255) body_slice->x = LCD_X - 1;
-        else if(body_slice->x == LCD_X + 1) body_slice->x = 0;
+        else if(body_slice->x == LCD_X - 1) body_slice->x = -1;
         else if(body_slice->y == 255) body_slice->y = LCD_Y - 1;
-        else if(body_slice->y == LCD_Y + 1) body_slice->y = 0;
+        else if(body_slice->y == LCD_Y - 1) body_slice->y = -1;
         return body_slice;
     }
 public:
-    Snake(byte x, byte y)
+    Snake(byte x, byte y, byte body_length)
     {
         tail = (struct s_body_snake*)malloc(sizeof(struct s_body_snake));
         tail->x = x;
-        tail->y = y+1;
+        tail->y = y + body_length - 1;
         tail->direc = DIRECTION_NORTH;
+        tail->next_direc = DIRECTION_NULL;
         tail->moves = NULL;
         tail->next = NULL;
+        //
+        struct s_body_snake* last_body_slice = tail;
+        for(byte l = body_length - 2; l > 0; l --)
+        {
+            struct s_body_snake* body = (struct s_body_snake*)malloc(sizeof(struct s_body_snake));
+            body->x = x;
+            body->y = y + l;
+            body->direc = DIRECTION_NORTH;
+            body->next_direc = DIRECTION_NULL;
+            body->moves = NULL;
+            body->next = last_body_slice;
+            last_body_slice = body;
+        }
         //
         head = (struct s_body_snake*)malloc(sizeof(struct s_body_snake));
         head->x = x;
         head->y = y;
         head->direc = DIRECTION_NORTH;
+        head->next_direc = DIRECTION_NULL;
         head->moves = NULL;
-        head->next = tail;
+        head->next = last_body_slice;
     }
 
     struct s_body_snake* get_head()
@@ -68,10 +86,13 @@ public:
     int set_direction(byte direc)
     {
         head->direc = direc;
+        head->next->next_direc = direc;
+        head->next->change_direc = true;
     }
 
     void moving()
     {
+        byte xxx = 0;
         struct s_body_snake *body = head;
         while(body != NULL)
         {
@@ -90,9 +111,32 @@ public:
                   body->x --;
                   break;
             }
+
+            Serial.print(xxx); Serial.print(" "); Serial.print(body->x); Serial.print(" "); Serial.println(body->y);
+            
+            if(body->next_direc != DIRECTION_NULL)
+            {
+                if(body->change_direc)
+                {
+                    body->direc = body->next_direc;
+                    Serial.print("direc "); Serial.println(body->direc);
+                    if(body->next != NULL)
+                    {
+                        body->next->next_direc = body->direc;
+                        body->next->change_direc = false;
+                        Serial.print("next direc "); Serial.println(body->next->next_direc);
+                    }
+                    body->next_direc = DIRECTION_NULL;
+                }
+                else
+                {
+                    body->change_direc = true;
+                }
+            }
             body = check_in_boundaries(body);
             //
             body = body->next;
+            xxx++;
         }
     }  
 };
@@ -104,8 +148,13 @@ private:
 public:
     SnakeGame(LCD *lcd, byte x, byte y) : Game(lcd)
     {
-        snake = new Snake(x, y);
+        snake = new Snake(x, y, 4);
         lcd->erase();
+    }
+
+    Snake* get_snake()
+    {
+        return snake;
     }
 
     void changed_direction(byte direc)
@@ -121,15 +170,12 @@ public:
         snake->moving();
         head = snake->get_head();
         getLCD()->setPixel(head->x, head->y, 1);
-        Serial.print(head->x);
-        Serial.print(" ");
-        Serial.println(head->y);
+        //Serial.print(head->x); Serial.print(" "); Serial.println(head->y);
         getLCD()->setPixel(tail_x, tail_y, 0);
-        Serial.print(tail_x);
-        Serial.print(" ");
-        Serial.println(tail_y);
-        getLCD()->drawMap();//updatePixel(head->x, head->y);
-        //getLCD()->updatePixel(tail->x, tail->y);
+        //Serial.print(tail_x); Serial.print(" "); Serial.println(tail_y);
+        //getLCD()->updatePixel(head->x, head->y);
+        //getLCD()->updatePixel(tail_x, tail_y);
+        getLCD()->drawMap();
     }
 };
 

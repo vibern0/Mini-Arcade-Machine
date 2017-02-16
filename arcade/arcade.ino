@@ -17,6 +17,8 @@ unsigned long int last_time;
 byte option_game = 1;
 Game *game;
 
+int moves;
+
 void setup()
 {
     int index;
@@ -33,6 +35,7 @@ void setup()
     }
     machine_state = LOAD_WINDOW;
     last_time = millis();
+    moves = 0;
 }
 
 void loop()
@@ -59,6 +62,10 @@ void loop()
             last_time = millis();
             game->moving();
             Serial.println("move");
+            if(moves++ == 5)
+            {
+                ((SnakeGame*)game)->get_snake()->set_direction(DIRECTION_EAST);
+            }
         }
     }
 }
