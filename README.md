@@ -2,14 +2,14 @@
 # Mini-Arcade-Game
 This is the code to run in an arduino for a Mini Arcade Machine project
 
-####About the project
+#### About the project
 The project is a small arcade machine for arcade games, like the snake game, space invaders and others. The project is entirely developed in C and C++ and it's built with arduino and some modules and sensors.
 
-####Games
+#### Games
 - Snake
 - Space Invaders
 
-####Material
+#### Material
 - [arduino][arduino-url]
 - [pcd8544][pcd8544-url]
 - [joystick][joystick-url]
@@ -18,7 +18,7 @@ The project is a small arcade machine for arcade games, like the snake game, spa
 - 4x 10k ohm resistor
 - (maybe others, not finished yet)
 
-####Schematic
+#### Schematic
 The schematic is designed with [fritzing][fritzing-url]. There is one imported component and it's possible to download [here][download-pcd8544-fritzing].
 
 
